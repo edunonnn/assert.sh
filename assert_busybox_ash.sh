@@ -66,7 +66,7 @@ _indent=$'\n\t' # local format helper
 _assert_reset() {
     tests_ran=0
     tests_failed=0
-    tests_errors=()
+    tests_errors=""
     tests_starttime="$(date +%s)" # Busybox doesn't support %N
 }
 
@@ -88,7 +88,9 @@ assert_end() {
     if [[ "$tests_failed" -eq 0 ]]; then
         echo "all $tests passed$report_time."
     else
-        for error in "${tests_errors[@]}"; do echo "$error"; done
+	# ash doesn't support array
+        # for error in "${tests_errors[@]}"; do echo "$error"; done
+	echo -ne "$tests_errors"
         echo "$tests_failed of $tests failed$report_time."
     fi
     tests_failed_previous=$tests_failed
@@ -135,8 +137,8 @@ _assert_fail() {
         echo "$report"
         exit 1
     fi
-    tests_errors[$tests_failed]="$report"
     (( tests_failed++ )) || :
+    tests_errors=$tests_errors"$report\n"
 }
 
 skip_if() {
