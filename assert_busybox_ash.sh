@@ -31,7 +31,8 @@ for arg in $args; do
         -h)
             echo "$0 [-vxidc]" \
                 "[--verbose] [--stop] [--invariant] [--discover] [--continue]"
-            echo "`sed 's/./ /g' <<< "$0"` [-h] [--help]"
+	    echo "`echo \"$0\" | sed 's/./ /g'` [-h] [--help]"
+            # echo "`sed 's/./ /g' <<< "$0"` [-h] [--help]"
             exit 0;;
         --help)
             cat <<EOF
