@@ -104,12 +104,12 @@ assert() {
     tests_ran=$(( $tests_ran + 1 )) || :
     [[ -z "$DISCOVERONLY" ]] || return
     expected=$(echo -ne "${2:-}")
-    result="$(eval 2>/dev/null $1 <<< ${3:-})" || true
+    result="$(echo -ne ${3:-} | eval $1 2>/dev/null)" || true
     if [[ "$result" == "$expected" ]]; then
         [[ -z "$DEBUG" ]] || echo -n .
         return
     fi
-    result="$(sed -e :a -e '$!N;s/\n/\\n/;ta' <<< "$result")"
+    result="$(echo -ne $result | sed -e :a -e '$!N;s/\n/\\n/;ta')"
     [[ -z "$result" ]] && result="nothing" || result="\"$result\""
     [[ -z "$2" ]] && expected="nothing" || expected="\"$2\""
     _assert_fail "expected $expected${_indent}got $result" "$1" "$3"
@@ -120,7 +120,9 @@ assert_raises() {
     tests_ran=$(( $tests_ran + 1 )) || :
     [[ -z "$DISCOVERONLY" ]] || return
     status=0
-    (eval $1 <<< ${3:-}) > /dev/null 2>&1 || status=$?
+    # (eval $1 <<< ${3:-}) > /dev/null 2>&1 || status=$?
+    # FIXME: When using pipe, the fail to fetch nested exit status
+    (echo ${3:-} | eval $1) > /dev/null 2>&1 || status=$?
     expected=${2:-0}
     if [[ "$status" -eq "$expected" ]]; then
         [[ -z "$DEBUG" ]] || echo -n .
