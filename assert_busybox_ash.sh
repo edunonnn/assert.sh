@@ -67,16 +67,15 @@ _assert_reset() {
     tests_ran=0
     tests_failed=0
     tests_errors=()
-    tests_starttime="$(date +%s%N)" # nanoseconds_since_epoch
+    tests_starttime="$(date +%s)" # Busybox doesn't support %N
 }
 
 assert_end() {
     # assert_end [suite ..]
-    tests_endtime="$(date +%s%N)"
+    tests_endtime="$(date +%s)" # Busybox doesn't support %N
     # required visible decimal place for seconds (leading zeros if needed)
     local tests_time="$( \
-        printf "%010d" "$(( ${tests_endtime/%N/000000000} 
-                            - ${tests_starttime/%N/000000000} ))")"  # in ns
+	printf "%d" "$(( $tests_endtime - $tests_starttime ))")"  # in sec.
     tests="$tests_ran ${*:+$* }tests"
     [[ -n "$DISCOVERONLY" ]] && echo "collected $tests." && _assert_reset && return
     [[ -n "$DEBUG" ]] && echo
@@ -84,9 +83,8 @@ assert_end() {
     #   ${tests_time:0:${#tests_time}-9} - seconds
     #   ${tests_time:${#tests_time}-9:3} - milliseconds
     [[ -z "$INVARIANT" ]] \
-        && report_time=" in ${tests_time:0:${#tests_time}-9}.${tests_time:${#tests_time}-9:3}s" \
-        || report_time=
-
+	&& report_time=" in $tests_time s" \
+		|| report_time=
     if [[ "$tests_failed" -eq 0 ]]; then
         echo "all $tests passed$report_time."
     else
